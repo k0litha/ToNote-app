@@ -9,14 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/BotttomSheetContainer">
-        4
+
         <ImageView
             android:layout_width="40dp"
             android:layout_height="6dp"
             android:layout_margin="10dp"
             android:id="@+id/bar"
             android:scaleType="fitXY"
-            android:srcCompat="@drawable/shape_image"
+            android:src="@drawable/shape_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
