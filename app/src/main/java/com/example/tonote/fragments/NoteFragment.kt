@@ -10,26 +10,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.tonote.R
 import com.example.tonote.activities.MainActivity
+import com.example.tonote.adapters.RvNotesAdapter
 import com.example.tonote.databinding.FragmentNoteBinding
+import com.example.tonote.utils.SwipeToDelete
 import com.example.tonote.utils.hideKeyboard
 import com.example.tonote.viewModel.NoteActivityViewModel
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialElevationScale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 
 class NoteFragment : Fragment(R.layout.fragment_note) {
 
     private lateinit var noteBinding: com.example.tonote.databinding.FragmentNoteBinding
     private val noteActivityViewModel: NoteActivityViewModel by activityViewModels()
-
+    private lateinit var rvAdapter: RvNotesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -68,6 +76,14 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         }
 
         recyclerViewDisplay()
+
+        swipeToDelete(noteBinding.rvNote)
+
+
+
+
+
+
         //implement search here
         noteBinding.search.addTextChangedListener(object: TextWatcher{
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -84,6 +100,8 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
                        noteActivityViewModel.searchNote(query).observe(viewLifecycleOwner)
                        {
 
+
+                           rvAdapter.submitList(it)
                        }
                    }
                    else{
@@ -102,6 +120,18 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
             }
 
         } )
+
+
+        noteBinding.search.setOnEditorActionListener { v, actionId, _ ->
+            if(actionId==EditorInfo.IME_ACTION_SEARCH)
+            {
+                v.clearFocus()
+                requireView().hideKeyboard()
+            }
+            return@setOnEditorActionListener true
+
+
+        }
 
         noteBinding.rvNote.setOnScrollChangeListener{_,scrollX,scrollY,_,oldScrollY ->
 
@@ -132,7 +162,49 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
 
     }
 
+    private fun swipeToDelete(rvNote: RecyclerView) {
+
+        val swipeToDeleteCallback=object:SwipeToDelete()
+        {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position=viewHolder.absoluteAdapterPosition
+                val note= rvAdapter.currentList[position]
+                var actionBtnTapped=false
+                noteActivityViewModel.deleteNote(note)
+                noteBinding.search.apply{
+                    hideKeyboard()
+                    clearFocus()
+                }
+                if(noteBinding.search.text.toString().isEmpty())
+                {
+                    observerDataChanges()
+                }
+                val snackBar=Snackbar.make(
+                    requireView(),"Note Deleted",Snackbar.LENGTH_LONG
+                ).addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>(){
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                    }
+
+                    override fun onShown(transientBottomBar: Snackbar?) {
+
+                        transientBottomBar?.setAction("UNDO"){
+                            noteActivityViewModel.saveNote()
+                        }
+                        super.onShown(transientBottomBar)
+                    }
+                })
+            }
+        }
+
+    }
+
     private fun observerDataChanges() {
+        noteActivityViewModel.getAllNotes().observe(viewLifecycleOwner){list->
+            noteBinding.noData.isVisible=list.isEmpty()
+            rvAdapter.submitList(list)
+
+        }
 
     }
 
@@ -147,6 +219,22 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
     }
 
     private fun setUpRecyclerView(spanCount: Int) {
+
+        noteBinding.rvNote.apply{
+            layoutManager=StaggeredGridLayoutManager(spanCount,StaggeredGridLayoutManager.VERTICAL)
+            setHasFixedSize(true)
+            rvAdapter= RvNotesAdapter()
+            rvAdapter.stateRestorationPolicy=
+                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+            adapter=rvAdapter
+            postponeEnterTransition(300L,TimeUnit.MILLISECONDS)
+            viewTreeObserver.addOnPreDrawListener {
+                startPostponedEnterTransition()
+                true
+            }
+        }
+        observerDataChanges()
+
 
 
 
