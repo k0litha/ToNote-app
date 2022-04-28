@@ -1,60 +1,66 @@
 package com.example.tonote.fragments
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation
 import com.example.tonote.R
+import com.example.tonote.activities.MainActivity
+import com.example.tonote.databinding.FragmentNoteBinding
+import com.example.tonote.utils.hideKeyboard
+import com.example.tonote.viewModel.NoteActivityViewModel
+import com.google.android.material.transition.MaterialElevationScale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [NoteFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class NoteFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+class NoteFragment : Fragment(R.layout.fragment_note) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private lateinit var noteBinding: com.example.tonote.databinding.FragmentNoteBinding
+    private val noteActivityViewModel: NoteActivityViewModel by activityViewModels()
+
+
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+        exitTransition=MaterialElevationScale(false).apply {
+            duration=350
+        }
+        enterTransition=MaterialElevationScale(false).apply {
+            duration=350
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_note, container, false)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        noteBinding= FragmentNoteBinding.bind(view)
+        val activity=activity as MainActivity
+        val navController= Navigation.findNavController(view)
+        requireView().hideKeyboard()
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(10)
+           // activity.window.statusBarColor= Color.WHITE
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            activity.window.statusBarColor=Color.parseColor("#9E9D9D")
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment NoteFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            NoteFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        }
+
+        noteBinding.addNoteFab.setOnClickListener {
+            noteBinding.appBarLayout.visibility = View.INVISIBLE
+            navController.navigate(NoteFragmentDirections.actionNoteFragmentToSaveOrDeleteFragment())
+        }
+        noteBinding.innerFab.setOnClickListener {
+            noteBinding.appBarLayout.visibility = View.INVISIBLE
+            navController.navigate(NoteFragmentDirections.actionNoteFragmentToSaveOrDeleteFragment())
+
+        }
     }
 }

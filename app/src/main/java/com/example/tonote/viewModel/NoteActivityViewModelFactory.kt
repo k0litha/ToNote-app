@@ -7,6 +7,8 @@ import com.example.tonote.repository.NoteRepository
 class NoteActivityViewModelFactory(private val repository: NoteRepository):
     ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+
+        @Suppress("UNCHECKED_CAST")
         return NoteActivityViewModel(repository) as T
     }
 }
