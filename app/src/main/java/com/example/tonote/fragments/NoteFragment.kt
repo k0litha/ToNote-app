@@ -6,19 +6,19 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.tonote.R
 import com.example.tonote.activities.MainActivity
-import com.example.tonote.adapters.RvNotesAdapter
+import com.example.tonote.adapters.RecycleViewNotesAdapter
 import com.example.tonote.databinding.FragmentNoteBinding
 import com.example.tonote.utils.SwipeToDelete
 import com.example.tonote.utils.hideKeyboard
@@ -37,7 +37,7 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
 
     private lateinit var noteBinding: com.example.tonote.databinding.FragmentNoteBinding
     private val noteActivityViewModel: NoteActivityViewModel by activityViewModels()
-    private lateinit var rvAdapter: RvNotesAdapter
+    private lateinit var recycleViewAdapter: RecycleViewNotesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -101,7 +101,7 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
                        {
 
 
-                           rvAdapter.submitList(it)
+                           recycleViewAdapter.submitList(it)
                        }
                    }
                    else{
@@ -168,7 +168,7 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position=viewHolder.absoluteAdapterPosition
-                val note= rvAdapter.currentList[position]
+                val note= recycleViewAdapter.currentList[position]
                 var actionBtnTapped=false
                 noteActivityViewModel.deleteNote(note)
                 noteBinding.search.apply{
@@ -189,20 +189,36 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
                     override fun onShown(transientBottomBar: Snackbar?) {
 
                         transientBottomBar?.setAction("UNDO"){
-                            noteActivityViewModel.saveNote()
+                            noteActivityViewModel.saveNote(note)
+                            actionBtnTapped=true
+                            noteBinding.noData.isVisible=false
                         }
+
+
                         super.onShown(transientBottomBar)
                     }
-                })
+                }).apply{
+                    animationMode=Snackbar.ANIMATION_MODE_FADE
+                    setAnchorView(R.id.add_note_fab)
+                }
+                snackBar.setActionTextColor(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.yellowOrange
+                    )
+                )
+                snackBar.show()
             }
         }
+        val itemTouchHelper=ItemTouchHelper(swipeToDeleteCallback)
+        itemTouchHelper.attachToRecyclerView(rvNote)
 
     }
 
     private fun observerDataChanges() {
         noteActivityViewModel.getAllNotes().observe(viewLifecycleOwner){list->
             noteBinding.noData.isVisible=list.isEmpty()
-            rvAdapter.submitList(list)
+            recycleViewAdapter.submitList(list)
 
         }
 
@@ -223,10 +239,10 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         noteBinding.rvNote.apply{
             layoutManager=StaggeredGridLayoutManager(spanCount,StaggeredGridLayoutManager.VERTICAL)
             setHasFixedSize(true)
-            rvAdapter= RvNotesAdapter()
-            rvAdapter.stateRestorationPolicy=
+            recycleViewAdapter= RecycleViewNotesAdapter()
+            recycleViewAdapter.stateRestorationPolicy=
                 RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
-            adapter=rvAdapter
+            adapter=recycleViewAdapter
             postponeEnterTransition(300L,TimeUnit.MILLISECONDS)
             viewTreeObserver.addOnPreDrawListener {
                 startPostponedEnterTransition()

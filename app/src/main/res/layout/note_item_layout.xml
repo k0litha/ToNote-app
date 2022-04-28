@@ -8,7 +8,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="5dp">
 
         <com.google.android.material.card.MaterialCardView
@@ -29,39 +29,39 @@
                 android:padding="5dp">
 
                 <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/noteItemTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/noteItemTitle"
                     android:layout_marginStart="4dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="4dp"
-                    android:padding="5dp"
                     android:ellipsize="end"
                     android:fontFamily="@font/google_sans_medium"
-                    android:text="Emter the title"
+                    android:padding="5dp"
+                    android:text="Enter the title"
+                    android:textAlignment="textStart"
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textAlignment="textStart">
+                    android:textStyle="bold">
 
                 </com.google.android.material.textview.MaterialTextView>
 
 
                 <TextView
+                    android:id="@+id/noteContentItem"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/noteContentItem"
                     android:layout_below="@id/noteItemTitle"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="3dp"
                     android:layout_marginStart="4dp"
+                    android:layout_marginTop="5dp"
                     android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="3dp"
                     android:ellipsize="end"
                     android:fontFamily="@font/google_sans_medium"
                     android:maxLines="12"
                     android:padding="5dp"
-                    android:textSize="14sp"
-                    android:text="@string/some_text">
+                    android:text="@string/some_text"
+                    android:textSize="14sp">
 
                 </TextView>
 
