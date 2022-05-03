@@ -1,18 +1,18 @@
 package com.example.tonote.fragments
 
-import android.R.attr
-import android.app.Activity.RESULT_OK
-import android.content.Intent
-import android.graphics.Color
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.util.SparseArray
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
+
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -20,6 +20,10 @@ import androidx.fragment.app.setFragmentResult
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
+
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageView
+import com.canhub.cropper.options
 import com.example.tonote.R
 import com.example.tonote.activities.MainActivity
 import com.example.tonote.databinding.BottomSheetLayoutBinding
@@ -30,15 +34,17 @@ import com.example.tonote.viewModel.NoteActivityViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.transition.MaterialContainerTransform
-import com.theartofdev.edmodo.cropper.CropImage
-import com.theartofdev.edmodo.cropper.CropImage.getPickImageChooserIntent
-import com.theartofdev.edmodo.cropper.CropImageView
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+
 
 
 class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
@@ -54,6 +60,22 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
     private lateinit var result: String
     lateinit var bitmap: Bitmap
 
+    private val cropImage = registerForActivityResult(CropImageContract()) { result ->
+        if (result.isSuccessful) {
+            // use the returned uri
+            val uriContent = result.uriContent
+
+            bitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, Uri.parse(uriContent.toString()))
+            val image = InputImage.fromBitmap(bitmap, 0)
+            imageToText(image)
+
+
+        } else {
+            // an error occurred
+            val exception = result.error
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,26 +90,6 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
 
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
-            val result = CropImage.getActivityResult(data)
-            if (resultCode == RESULT_OK) {
-                val resultUri: Uri = result.uri
-                bitmap = MediaStore.Images.Media.getBitmap(context?.contentResolver, Uri.parse(resultUri.toString()))
-                Toast.makeText(context, "done", Toast.LENGTH_SHORT).show()
-
-
-            } else if (resultCode === CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                val error = result.error
-            }
-
-        }
-    }
-
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -100,22 +102,22 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
 
         val requestCamera=registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             if (it) {
-                Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+
             } else {
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+
             }
         }
 
         contentBinding.OcrBtn.setOnClickListener{
             requestCamera.launch(android.Manifest.permission.CAMERA)
             requestCamera.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
-            requestCamera.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-            getContext()?.let { it1 ->
-                CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).start(
-                    it1, this)
-            }
 
+
+            cropImage.launch(
+                options {
+                    setGuidelines(CropImageView.Guidelines.ON)
+                })
 
         }
 
@@ -201,6 +203,22 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
 
     }
 
+ private fun imageToText(image: InputImage) {
+     val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+     recognizer.process(image)
+         .addOnSuccessListener {
+             contentBinding.etNoteContent.append("\n")
+             contentBinding.etNoteContent.append(it.text)
+         }
+         .addOnFailureListener { e ->
+             // Task failed with an exception
+             // ...
+         }
+ }
+
+
+
+
 
 
     private fun setUpNote() {
@@ -257,7 +275,7 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete) {
                        "key",
                        bundleOf("bundleKey" to result)
                    )
-                   navController.navigate(SaveOrDeleteFragmentDirections.actionSaveOrDeleteFragmentToNoteFragment())
+                   navController.popBackStack()
                }
                else ->{
                    //upadte note
