@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/noteContentFragmentParent"
-        tools:context=".fragments.SaveOrDeleteFragment">
+        tools:context=".fragments.SaveOrDeleteFragment"
+        android:background="@color/whitee">
         // toolbar
 
         <RelativeLayout
@@ -32,8 +33,10 @@
                 android:paddingBottom="5dp"
                 android:id="@+id/backBtn"
                 android:layout_centerVertical="true"
+
                 android:layout_marginRight="15dp"
                 android:src="@drawable/ic_round_arrow_back_24"
+
                 app:tint="@color/black">
 
             </ImageView>
@@ -42,9 +45,8 @@
                 android:id="@+id/lastEdited"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/date_rounded"
-
                 android:layout_centerInParent="true"
+                android:background="@drawable/date_rounded"
                 android:ellipsize="end"
                 android:fontFamily="@font/google_sans_regular"
                 android:paddingStart="13dp"
@@ -55,26 +57,28 @@
                 android:textAlignment="center"
                 android:textColor="@color/black"
                 android:textSize="12sp"
-                android:textStyle="bold">
+                android:textStyle="bold"
+                app:tint="@color/black">
 
             </com.google.android.material.textview.MaterialTextView>
 
+            <!--
+                        <ImageView
+                            android:id="@+id/saveNote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingRight="5dp"
+                            android:paddingBottom="5dp"
+                            android:src="@drawable/ic_baseline_save_24"
+                            app:tint="@color/black">
 
-            <ImageView
-                android:id="@+id/saveNote"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingRight="5dp"
-                android:paddingBottom="5dp"
-                android:src="@drawable/ic_baseline_save_24">
-
-            </ImageView>
-
+                        </ImageView>
+            -->
 
         </RelativeLayout>
 
@@ -85,9 +89,9 @@
             android:layout_below="@id/toolBarFragmentNoteContent">
 
             <androidx.core.widget.NestedScrollView
+                android:id="@+id/scrollView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/scrollView"
                 android:fillViewport="true">
 
                 <LinearLayout
@@ -96,37 +100,41 @@
                     android:orientation="vertical">
 
                     <EditText
+                        android:id="@+id/etTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
-                        android:background="@null"
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="20dp"
                         android:layout_marginBottom="10dp"
-                        android:id="@+id/etTitle"
-                        android:inputType="none"
-                        android:textSize="22dp"
-                        android:importantForAutofill="no"
+                        android:background="@null"
                         android:fontFamily="@font/google_sans_medium"
-                        android:hint="Note Title">
+                        android:hint="Note Title"
+                        android:importantForAutofill="no"
+                        android:inputType="none"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/hint"
+                        android:textSize="22dp">
 
                     </EditText>
 
 
                     <com.yahiaangelo.markdownedittext.MarkdownEditText
+                        android:id="@+id/etNoteContent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="22dp"
-                        android:layout_marginEnd="22dp"
                         android:layout_marginTop="10dp"
+                        android:layout_marginEnd="22dp"
                         android:background="@null"
                         android:fontFamily="@font/google_sans_regular"
                         android:hint="Note"
                         android:importantForAutofill="no"
                         android:inputType="none"
                         android:padding="10dp"
-                        android:textSize="16sp"
-                        android:id="@+id/etNoteContent">
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/hint"
+                        android:textSize="16sp">
 
                     </com.yahiaangelo.markdownedittext.MarkdownEditText>
 
@@ -159,7 +167,9 @@
                 app:backgroundTint="@color/purple"
                 android:layout_gravity="bottom|left"
                 app:fabSize="mini"
-                android:src="@drawable/ic_baseline_save_24">
+                android:src="@drawable/ic_camera"
+                >
+
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
             // TTSBUTTOn
@@ -171,8 +181,8 @@
                 android:layout_margin="15dp"
                 app:backgroundTint="@color/purple"
                 android:layout_gravity="bottom|center"
-                app:fabSize="mini"
-                android:src="@drawable/ic_baseline_save_24">
+                app:fabSize="normal"
+                android:src="@drawable/ic_tts">
 
             </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

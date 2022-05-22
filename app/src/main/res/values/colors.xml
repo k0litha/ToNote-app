@@ -10,25 +10,26 @@
 
 
     <!--color palette-->
+    <color name="whitee">#F7F7F7</color>
     <color name="purple">#D4C4E3</color>
     <color name="darkPurple">#9387F5</color>
-    <color name="blue">#A8DAF0</color>
-    <color name="peach">#F0C390</color>
-    <color name="green">#C3F09C</color>
-    <color name="orangeRed">#F3722C</color>
-    <color name="yellowOrange">#F8961E</color>
-    <color name="MangoTango">#F9844A</color>
-    <color name="maizeCrayola">#F9C74F</color>
+    <color name="blue">#8FBDD3</color>
+    <color name="peach">#E2DEA9</color>
+    <color name="green">#C1F4C5</color>
+    <color name="orangeRed">#FF8080</color>
+    <color name="yellowOrange">#FC997C</color>
+    <color name="MangoTango">#DE834D</color>
+    <color name="maizeCrayola">#EEC373</color>
     <color name="card_purple">#8690B1</color>
-    <color name="card_yellow">#FFCC00</color>
-    <color name="card_red">#FF3B30</color>
+    <color name="card_yellow">#CC9544</color>
+    <color name="card_red">#FF6363</color>
     <color name="card_violet">#FF9500</color>
-    <color name="card_blue">#5AC8FA</color>
-    <color name="card_green">#34C759</color>
+    <color name="card_blue">#54BAB9</color>
+    <color name="card_green">#65C18C</color>
 
 
     <array name="color_picker">
-        <item>@color/white</item>
+        <item>@color/whitee</item>
         <item>@color/card_purple</item>
         <item>@color/card_yellow</item>
         <item>@color/card_red</item>
@@ -45,6 +46,19 @@
         <item>@color/MangoTango</item>
         <item>@color/maizeCrayola</item>
     </array>
+    <color name="light_blue_50">#FFE1F5FE</color>
+    <color name="light_blue_200">#FF81D4FA</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="light_blue_900">#FF01579B</color>
+
+    <color name="searchbar">#e6e6e6</color>
+    <color name="L_white">#FFFFFFFF</color>
+    <color name="L_black">#FF000000</color>
+    <color name="Notetext">#3d3d3d</color>
+    <color name="fab">#FF000000</color>
+    <color name="hint">#7d7d7d</color>
+
+
 
 
 </resources>

@@ -2,24 +2,28 @@ package com.example.tonote.fragments
 
 import android.content.res.Configuration
 import android.graphics.Color
+import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
+import android.os.FileUtils
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.tonote.R
 import com.example.tonote.activities.MainActivity
 import com.example.tonote.adapters.RecycleViewNotesAdapter
 import com.example.tonote.databinding.FragmentNoteBinding
+import com.example.tonote.db.DAO
 import com.example.tonote.utils.SwipeToDelete
 import com.example.tonote.utils.hideKeyboard
 import com.example.tonote.viewModel.NoteActivityViewModel
@@ -30,6 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 
@@ -48,7 +53,12 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         enterTransition=MaterialElevationScale(false).apply {
             duration=350
         }
+
     }
+
+
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,7 +68,7 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         requireView().hideKeyboard()
         CoroutineScope(Dispatchers.Main).launch {
             delay(10)
-           // activity.window.statusBarColor= Color.WHITE
+            // activity.window.statusBarColor= Color.WHITE
             activity.window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             activity.window.statusBarColor=Color.parseColor("#9E9D9D")
@@ -66,8 +76,10 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
         }
 
         noteBinding.addNoteFab.setOnClickListener {
-            noteBinding.appBarLayout.visibility = View.INVISIBLE
-            navController.navigate(NoteFragmentDirections.actionNoteFragmentToSaveOrDeleteFragment())
+            /*noteBinding.appBarLayout.visibility = View.INVISIBLE
+            navController.navigate(NoteFragmentDirections.actionNoteFragmentToSaveOrDeleteFragment())*/
+
+
         }
         noteBinding.innerFab.setOnClickListener {
             noteBinding.appBarLayout.visibility = View.INVISIBLE
@@ -82,8 +94,6 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
 
 
 
-
-
         //implement search here
         noteBinding.search.addTextChangedListener(object: TextWatcher{
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -91,27 +101,27 @@ class NoteFragment : Fragment(R.layout.fragment_note) {
             }
 
             override fun onTextChanged(s: CharSequence?, p1: Int, p2: Int, p3: Int) {
-               if(s.toString().isNotEmpty())
-               {
-                   val text=s.toString()
-                   val query="%$text%"
-                   if(query.isNotEmpty())
-                   {
-                       noteActivityViewModel.searchNote(query).observe(viewLifecycleOwner)
-                       {
+                if(s.toString().isNotEmpty())
+                {
+                    val text=s.toString()
+                    val query="%$text%"
+                    if(query.isNotEmpty())
+                    {
+                        noteActivityViewModel.searchNote(query).observe(viewLifecycleOwner)
+                        {
 
 
-                           recycleViewAdapter.submitList(it)
-                       }
-                   }
-                   else{
-                       observerDataChanges()
-                   }
-               }
-               else
-               {
-                   observerDataChanges()
-               }
+                            recycleViewAdapter.submitList(it)
+                        }
+                    }
+                    else{
+                        observerDataChanges()
+                    }
+                }
+                else
+                {
+                    observerDataChanges()
+                }
 
             }
 

@@ -1,6 +1,7 @@
 package com.example.tonote.repository
 
 import androidx.room.Query
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.tonote.db.NoteDatabase
 import com.example.tonote.model.Note
 

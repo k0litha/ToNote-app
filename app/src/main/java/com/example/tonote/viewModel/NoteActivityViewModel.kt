@@ -4,6 +4,8 @@ import android.app.DownloadManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.sqlite.db.SimpleSQLiteQuery
+import com.example.tonote.db.DAO
 import com.example.tonote.model.Note
 import com.example.tonote.repository.NoteRepository
 import kotlinx.coroutines.Dispatchers

@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
+
         binding= com.example.tonote.databinding.ActivityMainBinding.inflate(layoutInflater)
         try{
             setContentView(binding.root)

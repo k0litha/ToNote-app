@@ -1,16 +1,23 @@
 package com.example.tonote.fragments
 
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
@@ -19,8 +26,6 @@ import androidx.fragment.app.setFragmentResult
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
-import androidx.test.core.app.ApplicationProvider.getApplicationContext
-
 import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageView
 import com.canhub.cropper.options
@@ -45,13 +50,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-
-
 class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSpeech.OnInitListener {
 
     private lateinit var navController: NavController
     private lateinit var contentBinding: FragmentSaveOrDeleteBinding
     private var  note: Note?=null
+    private lateinit var  md: String
     private var color=-1
     private val noteActivityViewModel: NoteActivityViewModel by activityViewModels()
     private val currentDate = SimpleDateFormat.getInstance().format(Date())
@@ -59,8 +63,12 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
     private val args: SaveOrDeleteFragmentArgs by navArgs()
     private lateinit var result: String
     lateinit var bitmap: Bitmap
-
     private var tts: TextToSpeech? = null
+
+
+
+
+
 
 
 
@@ -108,8 +116,6 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
         navController=Navigation.findNavController(view)
         val activity=activity as MainActivity
 
-
-
         val requestCamera=registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             if (it) {
 
@@ -123,8 +129,13 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
         contentBinding.ttsBtn.setOnClickListener{
             if (!tts!!.isSpeaking()) {
                 speakOut()
+
+
             }else{
                 if (tts != null) {
+                    contentBinding.ttsBtn.setBackgroundTintList(context?.let { it1 ->
+                        ContextCompat.getColorStateList(
+                            it1,R.color.purple)  })
                     tts!!.stop()
                 }
             }
@@ -152,15 +163,11 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
 
         contentBinding.backBtn.setOnClickListener{
         requireView().hideKeyboard()
-        navController.popBackStack()
+        saveNote()
+
         }
 
 
-
-
-        contentBinding.saveNote.setOnClickListener{
-            saveNote()
-        }
 
         try {
                 contentBinding.etNoteContent.setOnFocusChangeListener{_,hasFocus->
@@ -225,6 +232,22 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
 
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true)
+            {
+                override fun handleOnBackPressed() {
+                    saveNote()
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(
+            this,
+            callback
+        )
+    }
+
+
  private fun imageToText(image: InputImage) {
      val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
      recognizer.process(image)
@@ -240,6 +263,43 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
 
 
 
+    private fun saveNote() {
+        if(!contentBinding.etTitle.text.toString().isEmpty() || !contentBinding.etNoteContent.text.toString().isEmpty())
+        {
+            note=args.note
+            when(note){
+                null-> {
+                    noteActivityViewModel.saveNote(
+                        Note(
+                            0,
+                            contentBinding.etTitle.text.toString(),
+                            contentBinding.etNoteContent.getMD(),
+                            currentDate,
+                            color
+                        )
+                    )
+                    result = "Note Saved"
+                    setFragmentResult(
+                        "key",
+                        bundleOf("bundleKey" to result)
+                    )
+                    navController.popBackStack()
+                }
+                else ->{
+                    //upadte note
+                    updateNote()
+                    navController.popBackStack()
+
+                }
+
+
+            }
+        }
+        else
+        {
+            navController.popBackStack()
+        }
+    }
 
 
 
@@ -273,55 +333,17 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
         }
     }
 
-    private fun saveNote() {
-       if(contentBinding.etNoteContent.text.toString().isEmpty() ||
-               contentBinding.etTitle.text.toString().isEmpty())
-       {
-           Toast.makeText(activity,"Note is empty!",Toast.LENGTH_SHORT).show()
-       }
-       else{
-           note=args.note
-           when(note){
-               null-> {
-                   noteActivityViewModel.saveNote(
-                       Note(
-                           0,
-                           contentBinding.etTitle.text.toString(),
-                           contentBinding.etNoteContent.getMD(),
-                           currentDate,
-                           color
-                       )
-                   )
-                   result = "Note Saved"
-                   setFragmentResult(
-                       "key",
-                       bundleOf("bundleKey" to result)
-                   )
-                   navController.popBackStack()
-               }
-               else ->{
-                   //upadte note
-                   updateNote()
-                   navController.popBackStack()
-               }
 
-
-           }
-
-
-
-
-       }
-    }
-
-    private fun updateNote() {Toast.makeText(context, "Note has updated", Toast.LENGTH_SHORT).show()
+    private fun updateNote() {
         if (note!=null)
-        {
+        {md = SpannableStringBuilder(contentBinding.etNoteContent.getMD()).toString()
             noteActivityViewModel.updateNote(
+
+
                 Note(
                     note!!.id,
                     contentBinding.etTitle.text.toString(),
-                    contentBinding.etNoteContent.getMD(),
+                    md,
                     currentDate,
                     color,
                 )
@@ -331,10 +353,31 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
 
 
 
-
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val result = tts!!.setLanguage(Locale.US)
+
+            tts!!.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String) {
+                    Log.i("TextToSpeech", "On Start")
+                    contentBinding.ttsBtn.setBackgroundTintList(context?.let { it1 ->
+                        ContextCompat.getColorStateList(
+                            it1,R.color.card_green)
+                    })
+
+                }
+
+                override fun onDone(utteranceId: String) {
+                    contentBinding.ttsBtn.setBackgroundTintList(context?.let { it1 ->
+                        ContextCompat.getColorStateList(
+                            it1,R.color.purple)
+                    })
+                }
+
+                override fun onError(utteranceId: String) {
+                    Log.i("TextToSpeech", "On Error")
+                }
+            })
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS","The Language not supported!")
@@ -343,13 +386,55 @@ class SaveOrDeleteFragment : Fragment(R.layout.fragment_save_or_delete),TextToSp
             }
         }
     }
+
+
     private fun speakOut() {
 
-        val text = "Title. "+contentBinding.etTitle.text.toString()+". " + contentBinding.etNoteContent.text.toString()
+        tts!!.setSpeechRate(0.85f)
         tts!!.setSpeechRate(0.85f)
         tts!!.setPitch(1.10f)
-        tts!!.speak(text, TextToSpeech.QUEUE_FLUSH, null,"")
+        tts!!.speak(speakTextSelector(), TextToSpeech.QUEUE_FLUSH, null,"")
+
     }
+
+
+    private fun speakTextSelector(): String {
+        val titleStartSel: Int = contentBinding.etTitle.getSelectionStart()
+        val titleEndSel: Int = contentBinding.etTitle.getSelectionEnd()
+        val contentStartSel: Int = contentBinding.etNoteContent.getSelectionStart()
+        val contentEndSel: Int = contentBinding.etNoteContent.getSelectionEnd()
+
+        val selectedTitleText: String = contentBinding.etTitle.getText().toString().substring(titleStartSel, titleEndSel)
+        val selectedContentText: String = contentBinding.etNoteContent.getText().toString().substring(contentStartSel, contentEndSel)
+        val fullText = "" + contentBinding.etTitle.text.toString() + ". " + contentBinding.etNoteContent.text.toString()
+        var textOut =""
+
+        if (selectedTitleText == "" && selectedContentText == ""){textOut= fullText}
+        else
+        {
+            if (selectedTitleText != "" && selectedContentText == ""){textOut = selectedTitleText}
+            else if (selectedTitleText == "" && selectedContentText != ""){textOut = selectedContentText}
+        }
+
+        return textOut
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
      override fun onDestroy() {
         // Shutdown TTS when

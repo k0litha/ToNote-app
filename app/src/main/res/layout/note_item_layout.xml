@@ -60,6 +60,7 @@
                     android:fontFamily="@font/google_sans_medium"
                     android:maxLines="12"
                     android:padding="5dp"
+                    android:textColor="@color/Notetext"
                     android:text="@string/some_text"
                     android:textSize="14sp">
 

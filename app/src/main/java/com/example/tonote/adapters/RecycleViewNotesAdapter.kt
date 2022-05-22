@@ -47,6 +47,7 @@ class RecycleViewNotesAdapter: androidx.recyclerview.widget.ListAdapter<Note, Re
 
    }
 
+
    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
       return NoteViewHolder(
          LayoutInflater.from(parent.context).inflate(R.layout.note_item_layout,parent,false)
@@ -54,7 +55,7 @@ class RecycleViewNotesAdapter: androidx.recyclerview.widget.ListAdapter<Note, Re
 
    }
 
-   override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
+ override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
       getItem(position).let { note ->
          holder.apply {
             parent.transitionName="recyclerView_${note.id}"
