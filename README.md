@@ -1,2 +1,2 @@
 # ToNote-app
-Android application to simply take notes and to do lists using Kotlin MVVM. 
+Note-taking application built using MVVM architecture along with Repository pattern and Room database. It also include Markdown text, OCR, Text to Speech and home screen widget.
